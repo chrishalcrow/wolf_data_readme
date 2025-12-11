@@ -127,12 +127,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a>
   <ul class="collapse">
   <li><a href="#data-overview" id="toc-data-overview" class="nav-link" data-scroll-target="#data-overview">Data overview</a></li>
-  <li><a href="#the-pipeline" id="toc-the-pipeline" class="nav-link" data-scroll-target="#the-pipeline">The pipeline</a>
-  <ul class="collapse">
   <li><a href="#data-structure" id="toc-data-structure" class="nav-link" data-scroll-target="#data-structure">Data structure</a></li>
-  <li><a href="#running-the-pipeline" id="toc-running-the-pipeline" class="nav-link" data-scroll-target="#running-the-pipeline">Running the pipeline</a></li>
-  <li><a href="#accessing-the-data" id="toc-accessing-the-data" class="nav-link" data-scroll-target="#accessing-the-data">Accessing the data</a></li>
+  <li><a href="#running-the-pipeline" id="toc-running-the-pipeline" class="nav-link" data-scroll-target="#running-the-pipeline">Running the pipeline</a>
+  <ul class="collapse">
+  <li><a href="#sorting" id="toc-sorting" class="nav-link" data-scroll-target="#sorting">Sorting</a></li>
+  <li><a href="#deeplabcut" id="toc-deeplabcut" class="nav-link" data-scroll-target="#deeplabcut">DeepLabCut</a></li>
+  <li><a href="#sync-and-preprocess" id="toc-sync-and-preprocess" class="nav-link" data-scroll-target="#sync-and-preprocess">Sync and preprocess</a></li>
   </ul></li>
+  <li><a href="#reading-the-data" id="toc-reading-the-data" class="nav-link" data-scroll-target="#reading-the-data">Reading the data</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -185,10 +187,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Every session contains an output from Bonsai or Blender, and a Video. These capture the animal behaviour data, as well as a light pulse signal used for synchronisation. Most sessions include ephys data, which capture neural behaviour.</p>
 <p>We expect the most useful data to be the <code>outputs for analysis</code> (in teal), or the <code>raw data</code> (in red).</p>
 </section>
-<section id="the-pipeline" class="level2">
-<h2 class="anchored" data-anchor-id="the-pipeline">The pipeline</h2>
-<section id="data-structure" class="level3">
-<h3 class="anchored" data-anchor-id="data-structure">Data structure</h3>
+<section id="data-structure" class="level2">
+<h2 class="anchored" data-anchor-id="data-structure">Data structure</h2>
 <p>The raw data is organised as follows:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>raw<span class="op">/</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    session_folder<span class="op">/</span></span>
@@ -207,19 +207,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                sub<span class="op">-</span>{mouse}_day<span class="op">-</span>{day}_ses<span class="op">-</span>{session_name}_beh.nwb <span class="co"># an nwb file containing the behavioural outputs</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The sorting output depends on a sorting_protocol, e.g.&nbsp;kilosort4A. The protocols are specified in <a href="https://github.com/chrishalcrow/nolanlab-ephys/blob/main/src/nolanlab_ephys/si_protocols.py">github:chrishalcrow/nolanlab-ephys/src/nolanlab_ephys/si_protocols.py</a>.</p>
 </section>
-<section id="running-the-pipeline" class="level3">
-<h3 class="anchored" data-anchor-id="running-the-pipeline">Running the pipeline</h3>
+<section id="running-the-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="running-the-pipeline">Running the pipeline</h2>
 <p>The basic pipeline contains three scripts. We’ll go through how to run these on the Edinburgh EDDIE compute cluster here.</p>
-<section id="sorting" class="level4">
-<h4 class="anchored" data-anchor-id="sorting">Sorting</h4>
+<section id="sorting" class="level3">
+<h3 class="anchored" data-anchor-id="sorting">Sorting</h3>
 <p>Install chrishalcrow/nolanlab-ephys following the instructions here: https://github.com/chrishalcrow/nolanlab-ephys .</p>
 <p>For a sorting, you need to specify a mouse, a day, the sessions you want to sort and the sorting protocol to use. You also need to point to your raw data folder and your derivatives folder. To run a sorting, you would run a command such as the one below from the <code>nolanlab-ephys</code> directory:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run scripts/wolf/sort_on_eddie.py 4 8 MMNAV1 kilosort4A <span class="at">--data_folder</span> /exports/eddie/scratch/chalcrow/wolf/data/ <span class="at">--deriv_folder</span> /exports/eddie/scratch/chalcrow/wolf/derivatives</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The exact same arguments can be used locally with a different script:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run scripts/wolf/sort_on_comp.py 4 8 MMNAV1 kilosort4A <span class="at">--data_folder</span> /exports/eddie/scratch/chalcrow/wolf/data/ <span class="at">--deriv_folder</span> /exports/eddie/scratch/chalcrow/wolf/derivatives</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="deeplabcut" class="level4">
-<h4 class="anchored" data-anchor-id="deeplabcut">DeepLabCut</h4>
+<section id="deeplabcut" class="level3">
+<h3 class="anchored" data-anchor-id="deeplabcut">DeepLabCut</h3>
 <p>Install chrishalcrow/nolanlab-dlc following the instructions here: https://github.com/chrishalcrow/nolanlab-dlc .</p>
 <p>For a deeplabcut run, you need to stage the DLC model used to the EDDIE, then change its path in the <code>config.yaml</code> file. This is annoying. The models can be found in <code>DATASTORE/ActiveProjects/Harry/deeplabcut/</code>.</p>
 <p>You need to specify a mouse, a day, a session and a bodypart. A typical command looks like:</p>
@@ -228,15 +228,40 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>You can also run things locally using e.g.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run dlc_on_comp.py 4 8 MMNAV1 tongue <span class="at">--data_folder</span> /exports/eddie/scratch/chalcrow/wolf/data/ <span class="at">--deriv_folder</span> /exports/eddie/scratch/chalcrow/wolf/derivatives</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="sync-and-preprocess" class="level4">
-<h4 class="anchored" data-anchor-id="sync-and-preprocess">Sync and preprocess</h4>
+<section id="sync-and-preprocess" class="level3">
+<h3 class="anchored" data-anchor-id="sync-and-preprocess">Sync and preprocess</h3>
 <p>The syncing and preprocessing of data is done using https://github.com/wulfdewolf/mmnav . Install this and follow the instructions about environments.</p>
 <p>You need to specify a mouse, a day and sorter protocol. The sessions are determined automatically. If the day has no ephys, don’t include a sorting protocol. A typical command looks like:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="va">UV_PROJECT_ENVIRONMENT</span><span class="op">=</span><span class="va">$MMNAV_ENV</span> <span class="ex">uv</span> run <span class="at">--no-sync</span> <span class="at">--link-mode</span><span class="op">=</span>copy <span class="at">--cache-dir</span> <span class="va">$STORAGE</span>/code/uv_cache/ scripts/preprocessing/HPC/queue_days.py <span class="at">--storage</span> <span class="va">$STORAGE</span> <span class="at">--sub</span> 4 <span class="at">--day</span> 15 <span class="at">--srt</span> kilosort4A</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
-<section id="accessing-the-data" class="level3">
-<h3 class="anchored" data-anchor-id="accessing-the-data">Accessing the data</h3>
+<section id="reading-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="reading-the-data">Reading the data</h2>
+<section id="behavioural-data" class="level4">
+<h4 class="anchored" data-anchor-id="behavioural-data">Behavioural data</h4>
+<p>The behavioural data output is designed to easy use with the <a href="https://github.com/pynapple-org/pynapple">pynapple</a> package. You load it like so</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pynapple <span class="im">as</span> nap</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>beh <span class="op">=</span> nap.load_file(<span class="ss">f'sub-04_day-08_ses-MMNAV2_beh.nwb)</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="er">print</span>(beh[<span class="st">'P'</span>]) <span class="co"># gives the position on the VR track</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="analyzer" class="level4">
+<h4 class="anchored" data-anchor-id="analyzer">Analyzer</h4>
+<p>The spike sorting output is stored in a SpikeInterface SortingAnalyzer. This can be loaded like so</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> spikeinterface.full <span class="im">as</span> si</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>analyzer <span class="op">=</span> si.load_sorting_analyzer(<span class="st">'sub-04_day-08_ses-MMNAV2_srt-kilosort4A_analyzer.zarr'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>We also save curation json files, which can be applied to the analyzer:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>curation <span class="op">=</span> si.load_curation(<span class="st">'sub-04_day-08_ses-MMNAV2_srt-kilosort4A_curationA.json'</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>curated_analzyer <span class="op">=</span> analyzer.apply_curation(curation)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The analyzer can be easily convert to a pynapple object, to be easily used alongside the behavioural data:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>spikes <span class="op">=</span> si.to_pynapple_tsgroup(curated_analzyer)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Note that the analyzer can easily be viewed using (SpikeInterface-GUI)[https://github.com/SpikeInterface/spikeinterface-gui/]. You need to install it, then you can run e.g.</p>
+<pre><code>sigui path/to/analyzer --curation --curation-file path/to/curation/file</code></pre>
+<p>This allows you to check the automated curation we apply.</p>
+</section>
+<section id="raw-ephys" class="level4">
+<h4 class="anchored" data-anchor-id="raw-ephys">Raw ephys</h4>
+<p>You might want to look at the raw data directly. You can open it using spikeinterface</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>recording <span class="op">=</span> si.read_openephys(<span class="st">'M03_D09_2025-11-20_13-58-15_OF1'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
 </section>

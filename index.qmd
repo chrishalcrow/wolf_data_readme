@@ -1,0 +1,111 @@
+---
+title: Experiment summary
+output: html_document
+theme: cosmo
+format:
+  html:
+    toc: true
+    toc-location: left
+---
+
+# Overview
+
+This experiment is designed to find out stuff about memory. 
+
+## Session Types
+
+Each day, each mouse participated in one or more sessions. E.g. in the most common day, a mouse partakes in a single VR session.
+
+
+# Data
+
+## Data overview
+
+Our basic pipeline overview can be found below.
+
+![Pipeline overview](https://raw.githubusercontent.com/chrishalcrow/wolf_data_readme/refs/heads/main/images/pipelineoverview.png){.lightbox}
+
+Every session contains an output from Bonsai or Blender, and a Video. These capture the animal behaviour data, as well as a light pulse signal used for synchronisation. Most sessions include ephys data, which capture neural behaviour.
+
+We expect the most useful data to be the `outputs for analysis` (in teal), or the `raw data` (in red).
+
+## The pipeline
+
+### Data structure
+
+The raw data is organised as follows:
+
+``` python
+raw/
+    session_folder/
+        M{mouse}_D{day}_datetime_{session_name}/
+            M{mouse}_D{day}_{session_name}_{datetime}.log # ??
+            M{mouse}_D{day}_{session_name}_{video_name}.avi  # video of behaviour
+            M{mouse}_D{day}_{session_name}_{video_name}.csv # behavioural output from Bonsai/Blender
+            Record Node 109/  # Ephys data
+```
+
+The processed data is organised as follows:
+
+``` python
+processed/
+    M{mouse}/
+        D{day}/
+            {session_name}/
+                sub-{mouse}_day-{day}_ses-{session_name}_srt-{sorter_protocol}_analyzer.zarr # a spikeinterface SortingAnalyzer
+                sub-{mouse}_day-{day}_ses-{session_name}_srt-{sorter_protocol}_{curation_protocol}.json # a file detailing the curation of the units (e.g. are they good units? Possible merges etc)
+                sub-{mouse}_day-{day}_ses-{session_name}_beh.nwb # an nwb file containing the behavioural outputs
+
+The sorting output depends on a sorting_protocol, e.g. kilosort4A. The protocols are specified in [github:chrishalcrow/nolanlab-ephys/src/nolanlab_ephys/si_protocols.py](https://github.com/chrishalcrow/nolanlab-ephys/blob/main/src/nolanlab_ephys/si_protocols.py).
+
+### Running the pipeline
+
+The basic pipeline contains three scripts. We'll go through how to run these on the Edinburgh EDDIE compute cluster here.
+
+#### Sorting
+
+Install chrishalcrow/nolanlab-ephys following the instructions here: https://github.com/chrishalcrow/nolanlab-ephys .
+
+For a sorting, you need to specify a mouse, a day, the sessions you want to sort and the sorting protocol to use. You also need to point to your raw data folder and your derivatives folder. To run a sorting, you would run a command such as the one below from the `nolanlab-ephys` directory:
+
+``` bash
+uv run scripts/wolf/sort_on_eddie.py 4 8 MMNAV1 kilosort4A --data_folder /exports/eddie/scratch/chalcrow/wolf/data/ --deriv_folder /exports/eddie/scratch/chalcrow/wolf/derivatives
+```
+
+The exact same arguments can be used locally with a different script:
+
+``` bash
+uv run scripts/wolf/sort_on_comp.py 4 8 MMNAV1 kilosort4A --data_folder /exports/eddie/scratch/chalcrow/wolf/data/ --deriv_folder /exports/eddie/scratch/chalcrow/wolf/derivatives
+```
+
+#### DeepLabCut
+
+Install chrishalcrow/nolanlab-dlc following the instructions here: https://github.com/chrishalcrow/nolanlab-dlc .
+
+For a deeplabcut run, you need to stage the DLC model used to the EDDIE, then change its path in the `config.yaml` file. This is annoying. The models can be found in `DATASTORE/ActiveProjects/Harry/deeplabcut/`.
+
+You need to specify a mouse, a day, a session and a bodypart. A typical command looks like:
+
+``` bash
+uv run dlc_on_eddie.py 4 8 MMNAV1 tongue --data_folder /exports/eddie/scratch/chalcrow/wolf/data/ --deriv_folder /exports/eddie/scratch/chalcrow/wolf/derivatives
+```
+
+DLC will be much more efficient if you specify a region of interest. These are stored in e.g. `nolanlab-dlc/wolf_crops/tongue_crops_wolf.csv`.
+
+You can also run things locally using e.g.
+
+``` bash
+uv run dlc_on_comp.py 4 8 MMNAV1 tongue --data_folder /exports/eddie/scratch/chalcrow/wolf/data/ --deriv_folder /exports/eddie/scratch/chalcrow/wolf/derivatives
+```
+
+#### Sync and preprocess
+
+The syncing and preprocessing of data is done using https://github.com/wulfdewolf/mmnav . Install this and follow the instructions about environments.
+
+You need to specify a mouse, a day and sorter protocol. The sessions are determined automatically. If the day has no ephys, don't include a sorting protocol. A typical command looks like:
+
+``` bash
+UV_PROJECT_ENVIRONMENT=$MMNAV_ENV uv run --no-sync --link-mode=copy --cache-dir $STORAGE/code/uv_cache/ scripts/preprocessing/HPC/queue_days.py --storage $STORAGE --sub 4 --day 15 --srt kilosort4A
+```
+
+### Accessing the data

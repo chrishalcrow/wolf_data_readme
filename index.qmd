@@ -55,6 +55,7 @@ processed/
                 sub-{mouse}_day-{day}_ses-{session_name}_srt-{sorter_protocol}_analyzer.zarr # a spikeinterface SortingAnalyzer
                 sub-{mouse}_day-{day}_ses-{session_name}_srt-{sorter_protocol}_{curation_protocol}.json # a file detailing the curation of the units (e.g. are they good units? Possible merges etc)
                 sub-{mouse}_day-{day}_ses-{session_name}_beh.nwb # an nwb file containing the behavioural outputs
+```
 
 The sorting output depends on a sorting_protocol, e.g. kilosort4A. The protocols are specified in [github:chrishalcrow/nolanlab-ephys/src/nolanlab_ephys/si_protocols.py](https://github.com/chrishalcrow/nolanlab-ephys/blob/main/src/nolanlab_ephys/si_protocols.py).
 

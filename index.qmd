@@ -29,9 +29,7 @@ Every session contains an output from Bonsai or Blender, and a Video. These capt
 
 We expect the most useful data to be the `outputs for analysis` (in teal), or the `raw data` (in red).
 
-## The pipeline
-
-### Data structure
+## Data structure
 
 The raw data is organised as follows:
 
@@ -59,11 +57,11 @@ processed/
 
 The sorting output depends on a sorting_protocol, e.g. kilosort4A. The protocols are specified in [github:chrishalcrow/nolanlab-ephys/src/nolanlab_ephys/si_protocols.py](https://github.com/chrishalcrow/nolanlab-ephys/blob/main/src/nolanlab_ephys/si_protocols.py).
 
-### Running the pipeline
+## Running the pipeline
 
 The basic pipeline contains three scripts. We'll go through how to run these on the Edinburgh EDDIE compute cluster here.
 
-#### Sorting
+### Sorting
 
 Install chrishalcrow/nolanlab-ephys following the instructions here: https://github.com/chrishalcrow/nolanlab-ephys .
 
@@ -79,7 +77,7 @@ The exact same arguments can be used locally with a different script:
 uv run scripts/wolf/sort_on_comp.py 4 8 MMNAV1 kilosort4A --data_folder /exports/eddie/scratch/chalcrow/wolf/data/ --deriv_folder /exports/eddie/scratch/chalcrow/wolf/derivatives
 ```
 
-#### DeepLabCut
+### DeepLabCut
 
 Install chrishalcrow/nolanlab-dlc following the instructions here: https://github.com/chrishalcrow/nolanlab-dlc .
 
@@ -99,7 +97,7 @@ You can also run things locally using e.g.
 uv run dlc_on_comp.py 4 8 MMNAV1 tongue --data_folder /exports/eddie/scratch/chalcrow/wolf/data/ --deriv_folder /exports/eddie/scratch/chalcrow/wolf/derivatives
 ```
 
-#### Sync and preprocess
+### Sync and preprocess
 
 The syncing and preprocessing of data is done using https://github.com/wulfdewolf/mmnav . Install this and follow the instructions about environments.
 
@@ -109,4 +107,52 @@ You need to specify a mouse, a day and sorter protocol. The sessions are determi
 UV_PROJECT_ENVIRONMENT=$MMNAV_ENV uv run --no-sync --link-mode=copy --cache-dir $STORAGE/code/uv_cache/ scripts/preprocessing/HPC/queue_days.py --storage $STORAGE --sub 4 --day 15 --srt kilosort4A
 ```
 
-### Accessing the data
+## Reading the data
+
+#### Behavioural data
+
+The behavioural data output is designed to easy use with the [pynapple](https://github.com/pynapple-org/pynapple) package. You load it like so
+
+``` python
+import pynapple as nap
+beh = nap.load_file(f'sub-04_day-08_ses-MMNAV2_beh.nwb)
+print(beh['P']) # gives the position on the VR track
+```
+
+#### Analyzer
+
+The spike sorting output is stored in a SpikeInterface SortingAnalyzer. This can be loaded like so
+
+``` python
+import spikeinterface.full as si
+analyzer = si.load_sorting_analyzer('sub-04_day-08_ses-MMNAV2_srt-kilosort4A_analyzer.zarr')
+```
+
+We also save curation json files, which can be applied to the analyzer:
+
+``` python
+curation = si.load_curation('sub-04_day-08_ses-MMNAV2_srt-kilosort4A_curationA.json')
+curated_analzyer = analyzer.apply_curation(curation)
+```
+
+The analyzer can be easily convert to a pynapple object, to be easily used alongside the behavioural data:
+
+``` python
+spikes = si.to_pynapple_tsgroup(curated_analzyer)
+```
+
+Note that the analyzer can easily be viewed using (SpikeInterface-GUI)[https://github.com/SpikeInterface/spikeinterface-gui/]. You need to install it, then you can run e.g.
+
+```
+sigui path/to/analyzer --curation --curation-file path/to/curation/file
+```
+
+This allows you to check the automated curation we apply.
+
+#### Raw ephys
+
+You might want to look at the raw data directly. You can open it using spikeinterface
+
+``` python
+recording = si.read_openephys('M03_D09_2025-11-20_13-58-15_OF1')
+```
